@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  couchdb:
+    image: couchdb:3.3
+    container_name: obsidian-livesync
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ}
+      - COUCHDB_USER=${COUCHDB_USER}
+      - COUCHDB_PASSWORD=${COUCHDB_PASSWORD}
+
+    volumes:
+      - /opt/docker_files/LabLog/obsidian/data/obsidian-livesync/couchdb-data:/opt/couchdb/data
+      - /opt/docker_files/LabLog/obsidian/data/obsidian-livesync/couchdb-etc:/opt/couchdb/etc/local.d
+    ports:
+      - "5984:5984"
+    networks:
+      - obsidian-net
+
+  obsidian:
+    image: lscr.io/linuxserver/obsidian:latest
+    container_name: obsidian
+    hostname: obsidian
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - /opt/docker_files/LabLog/obsidian/data/obsidian:/config
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    shm_size: "1gb"
+    restart: unless-stopped
+    networks:
+      - obsidian-net
+
+networks:
+  obsidian-net:
+    external: true
